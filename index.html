@@ -16,21 +16,21 @@
         body { font-family: 'Noto Sans KR', sans-serif; background-color: #080c14; color: #f1f5f9; touch-action: manipulation; }
         .glass-card { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); }
         .ads-placeholder { background: rgba(30, 41, 59, 0.35); border: 1px dashed rgba(148, 163, 184, 0.2); }
-        .waveform-scroll-container::-webkit-scrollbar { height: 6px; }
+        .waveform-scroll-container::-webkit-scrollbar { height: 4px; }
         .waveform-scroll-container::-webkit-scrollbar-track { background: #020617; }
-        .waveform-scroll-container::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+        .waveform-scroll-container::-webkit-scrollbar-thumb { background: #475569; border-radius: 2px; }
     </style>
 </head>
 <body class="min-h-screen bg-[#080c14] text-slate-100 antialiased">
 
-    <!-- 메인 레이아웃: 답답함 없는 여백 및 황금 비율 레이아웃 -->
-    <div class="max-w-4xl mx-auto px-3 py-4 sm:py-6 space-y-4 sm:space-y-5">
+    <!-- 메인 레이아웃: 수직 간격 15px(space-y-[15px]) 및 내부 패딩 15px(p-[15px]) 수치 고정 -->
+    <div class="max-w-4xl mx-auto px-3 py-3 space-y-[15px]">
 
-        <!-- 상단 헤더 -->
-        <header class="w-full border-b border-slate-800/80 pb-3 flex items-center justify-between">
+        <!-- 상단 헤더 (내부 여백 15px / p-[15px] 지정) -->
+        <header class="w-full border-b border-slate-800/80 p-[15px] flex items-center justify-between glass-card rounded-2xl">
             <div class="flex items-center space-x-2.5">
-                <span class="text-2xl">🎷</span>
-                <h1 class="text-lg sm:text-xl font-black bg-gradient-to-r from-teal-300 to-blue-400 bg-clip-text text-transparent">
+                <span class="text-xl sm:text-2xl">🎷</span>
+                <h1 class="text-base sm:text-xl font-black bg-gradient-to-r from-teal-300 to-blue-400 bg-clip-text text-transparent">
                     보이스 & 악기 파형 분석기
                 </h1>
             </div>
@@ -39,17 +39,17 @@
             </span>
         </header>
 
-        <!-- 상단 애드센스 광고 영역 (세로 90px 고정 규격) -->
-        <div class="ads-placeholder w-full h-[90px] rounded-2xl flex items-center justify-between px-4 text-slate-400 text-xs sm:text-sm font-medium shadow-sm">
+        <!-- 상단 애드센스 광고 영역 (세로 80px 고정) -->
+        <div class="ads-placeholder w-full h-[80px] min-h-[80px] rounded-2xl flex items-center justify-between px-4 text-slate-400 text-xs sm:text-sm font-medium shadow-sm">
             <span>[구글 애드센스 상단 광고 영역]</span>
             <span class="text-[10px] sm:text-xs bg-slate-800/80 px-2 py-0.5 rounded">광고</span>
         </div>
 
-        <!-- 메인 파형 분석기 메인 카드 (시원하고 여유 있는 패딩 적용) -->
-        <div class="glass-card rounded-2xl p-4 sm:p-6 space-y-4 sm:space-y-5 shadow-2xl">
+        <!-- 메인 파형 분석기 메인 카드 (내부 패딩 15px / p-[15px] 지정, 간격 15px) -->
+        <div class="glass-card rounded-2xl p-[15px] space-y-[15px] shadow-2xl">
 
             <!-- 1. 컨트롤 버튼 및 상태 디스플레이 -->
-            <div class="flex flex-wrap items-center justify-between gap-2.5 border-b border-slate-800/80 pb-3.5">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/80 pb-3">
                 <div class="flex items-center space-x-2">
                     <div id="statusDot" class="w-3 h-3 rounded-full bg-slate-500"></div>
                     <div class="flex items-center space-x-2 text-xs sm:text-sm">
@@ -59,31 +59,31 @@
                     </div>
                 </div>
 
-                <div class="flex items-center space-x-2 w-full sm:w-auto justify-end">
-                    <button id="toggleMicBtn" class="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-black text-sm transition-all shadow-lg active:scale-95">
+                <div class="flex items-center space-x-1.5 w-full sm:w-auto justify-end">
+                    <button id="toggleMicBtn" class="flex-1 sm:flex-initial px-3.5 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-black text-xs sm:text-sm transition-all shadow-md active:scale-95">
                         <span id="btnText">측정 시작</span>
                     </button>
-                    <button id="playBtn" disabled class="px-3.5 py-2.5 rounded-xl bg-slate-800 text-slate-500 font-black text-sm border border-slate-700/60 opacity-50 cursor-not-allowed transition-all">
+                    <button id="playBtn" disabled class="px-3 py-2 rounded-xl bg-slate-800 text-slate-500 font-black text-xs sm:text-sm border border-slate-700/60 opacity-50 cursor-not-allowed transition-all">
                         듣기
                     </button>
-                    <button id="stopPlayBtn" disabled class="px-3.5 py-2.5 rounded-xl bg-slate-800 text-slate-500 font-black text-sm border border-slate-700/60 opacity-50 cursor-not-allowed transition-all">
+                    <button id="stopPlayBtn" disabled class="px-3 py-2 rounded-xl bg-slate-800 text-slate-500 font-black text-xs sm:text-sm border border-slate-700/60 opacity-50 cursor-not-allowed transition-all">
                         정지
                     </button>
-                    <button id="resetBtn" class="px-3 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-black text-sm border border-slate-700 transition-all">
+                    <button id="resetBtn" class="px-2.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-black text-xs sm:text-sm border border-slate-700 transition-all">
                         초기화
                     </button>
                 </div>
             </div>
 
-            <!-- 2. 파형 트랙 영역 (딱 보기 좋은 세로 160px~180px 황금 비율) -->
-            <div class="space-y-2">
+            <!-- 2. 파형 트랙 영역 (슬림 세로 130px~150px 로 축소하여 하단 광고 공간 완벽 확보) -->
+            <div class="space-y-1.5">
                 <div class="flex justify-between items-center text-xs font-bold text-slate-300 px-1">
                     <span>중앙 고정 커서 (스크롤 탐색 / 재생 시 파형 이동)</span>
                     <span id="freqText" class="text-teal-300 font-extrabold">대기</span>
                 </div>
 
                 <!-- 파형 캔버스 컨테이너 -->
-                <div class="relative w-full h-40 sm:h-48 rounded-xl overflow-hidden border border-slate-800/90 shadow-inner bg-slate-950">
+                <div class="relative w-full h-32 sm:h-38 rounded-xl overflow-hidden border border-slate-800/90 shadow-inner bg-slate-950">
                     
                     <!-- 화면 중앙 세로 고정 붉은 커서 -->
                     <div class="absolute top-0 bottom-0 left-1/2 w-0.5 bg-red-500 z-20 pointer-events-none shadow-[0_0_8px_rgba(239,68,68,0.8)]">
@@ -97,54 +97,54 @@
                 </div>
             </div>
 
-            <!-- 3. 하단 주법 안내 3단 카드 (넓고 쾌적한 카드 디자인) -->
-            <div class="grid grid-cols-3 gap-2.5 pt-1 text-center">
-                <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 sm:p-3 space-y-1">
+            <!-- 3. 하단 주법 안내 3단 카드 (15px 간격 정돈) -->
+            <div class="grid grid-cols-3 gap-2.5 pt-0.5 text-center">
+                <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-2 space-y-0.5">
                     <div class="font-black text-teal-300 text-xs sm:text-sm">싱글음 / 롱톤</div>
-                    <div class="text-slate-300 text-[11px] sm:text-xs font-medium">매끄러운 띠</div>
+                    <div class="text-slate-300 text-[10px] sm:text-xs font-medium">매끄러운 띠</div>
                 </div>
-                <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 sm:p-3 space-y-1">
+                <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-2 space-y-0.5">
                     <div class="font-black text-blue-300 text-xs sm:text-sm">베이스 / 타격</div>
-                    <div class="text-slate-300 text-[11px] sm:text-xs font-medium">수직 기둥</div>
+                    <div class="text-slate-300 text-[10px] sm:text-xs font-medium">수직 기둥</div>
                 </div>
-                <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 sm:p-3 space-y-1">
+                <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-2 space-y-0.5">
                     <div class="font-black text-purple-300 text-xs sm:text-sm">비브라토</div>
-                    <div class="text-slate-300 text-[11px] sm:text-xs font-medium">규칙적 물결</div>
+                    <div class="text-slate-300 text-[10px] sm:text-xs font-medium">규칙적 물결</div>
                 </div>
             </div>
 
         </div>
 
-        <!-- 하단 애드센스 광고 영역 (세로 90px 고정 규격) -->
-        <div class="ads-placeholder w-full h-[90px] rounded-2xl flex items-center justify-between px-4 text-slate-400 text-xs sm:text-sm font-medium shadow-sm">
+        <!-- 하단 애드센스 광고 영역 (세로 80px 고정, 화면 하단 잘림 완벽 방지) -->
+        <div class="ads-placeholder w-full h-[80px] min-h-[80px] rounded-2xl flex items-center justify-between px-4 text-slate-400 text-xs sm:text-sm font-medium shadow-sm">
             <span>[구글 애드센스 하단 광고 영역]</span>
             <span class="text-[10px] sm:text-xs bg-slate-800/80 px-2 py-0.5 rounded">광고</span>
         </div>
 
-        <!-- [SEO 상위 노출용 텍스트 섹션] 자연스러운 하단 여백 후 배치 -->
-        <section class="glass-card rounded-2xl p-5 sm:p-6 space-y-4 text-sm text-slate-200 leading-relaxed border-t border-slate-800/80 shadow-2xl mt-8">
+        <!-- [SEO 상위 노출용 텍스트 섹션] -->
+        <section class="glass-card rounded-2xl p-[15px] space-y-[15px] text-sm text-slate-200 leading-relaxed border-t border-slate-800/80 shadow-2xl mt-8">
             <h2 class="text-base sm:text-lg font-black text-teal-300 flex items-center gap-2">
                 <span>📖</span> <span>보이스 & 악기 파형 분석기 활용 노하우</span>
             </h2>
 
-            <div class="space-y-3.5 pt-1">
+            <div class="space-y-3 pt-1">
                 <div>
                     <h3 class="font-bold text-slate-100 text-sm sm:text-base">1. 하모니카 · 관악기 톤(Tone) 및 호흡 측정</h3>
-                    <p class="text-slate-300 text-xs sm:text-sm pt-1 leading-normal">
+                    <p class="text-slate-300 text-xs sm:text-sm pt-0.5 leading-normal">
                         하모니카, 색소폰, 오카리나, 팬플룻, 플루트 연주 시 긴 호흡(롱톤)을 불었을 때 파형의 위아래 선이 흔들림 없이 두툼하고 매끄러운 띠를 형성해야 맑고 깊은 단전 호흡이 이루어진 것입니다.
                     </p>
                 </div>
 
                 <div>
                     <h3 class="font-bold text-slate-100 text-sm sm:text-base">2. 텅블록 베이스 및 순간 주법 타격감 검증</h3>
-                    <p class="text-slate-300 text-xs sm:text-sm pt-1 leading-normal">
+                    <p class="text-slate-300 text-xs sm:text-sm pt-0.5 leading-normal">
                         하모니카 텅블록(Tongue Block) 베이스를 찍거나 악기 아티큘레이션 연주 시 파형에 날카롭고 명확한 수직 기둥 스파이크가 찍히는지 눈으로 직접 확인할 수 있습니다.
                     </p>
                 </div>
 
                 <div>
                     <h3 class="font-bold text-slate-100 text-sm sm:text-base">3. 비브라토(Vibrato) 파동 주기 및 깊이 분석</h3>
-                    <p class="text-slate-300 text-xs sm:text-sm pt-1 leading-normal">
+                    <p class="text-slate-300 text-xs sm:text-sm pt-0.5 leading-normal">
                         바이올린, 색소폰, 보컬, 하모니카 비브라토 연주 시 파형이 일정한 높낮이와 균일한 간격으로 고운 물결(Wave) 형태를 그리는지 정밀 측정해 보세요.
                     </p>
                 </div>
@@ -152,7 +152,7 @@
         </section>
 
         <!-- 하단 카피라이트 -->
-        <footer class="w-full text-center py-4 text-xs text-slate-500 font-medium">
+        <footer class="w-full text-center py-3 text-xs text-slate-500 font-medium">
             <p>© 2026 Voice & Instrument Waveform Analyzer. All rights reserved.</p>
         </footer>
 
@@ -259,7 +259,7 @@
                 statusText.className = "font-extrabold text-blue-400";
                 
                 stopPlayBtn.disabled = false;
-                stopPlayBtn.className = "px-3.5 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-black text-sm shadow cursor-pointer transition-all";
+                stopPlayBtn.className = "px-3 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white font-black text-xs sm:text-sm shadow cursor-pointer transition-all";
 
                 animatePlayback();
             }
@@ -284,7 +284,7 @@
             statusText.className = "font-extrabold text-slate-200";
 
             stopPlayBtn.disabled = true;
-            stopPlayBtn.className = "px-3.5 py-2.5 rounded-xl bg-slate-800 text-slate-500 font-black text-sm border border-slate-700/60 opacity-50 cursor-not-allowed transition-all";
+            stopPlayBtn.className = "px-3 py-2 rounded-xl bg-slate-800 text-slate-500 font-black text-xs sm:text-sm border border-slate-700/60 opacity-50 cursor-not-allowed transition-all";
 
             drawWaveform();
         }
@@ -316,9 +316,9 @@
             }
             
             playBtn.disabled = true;
-            playBtn.className = "px-3.5 py-2.5 rounded-xl bg-slate-800 text-slate-500 font-black text-sm border border-slate-700/60 opacity-50 cursor-not-allowed transition-all";
+            playBtn.className = "px-3 py-2 rounded-xl bg-slate-800 text-slate-500 font-black text-xs sm:text-sm border border-slate-700/60 opacity-50 cursor-not-allowed transition-all";
             stopPlayBtn.disabled = true;
-            stopPlayBtn.className = "px-3.5 py-2.5 rounded-xl bg-slate-800 text-slate-500 font-black text-sm border border-slate-700/60 opacity-50 cursor-not-allowed transition-all";
+            stopPlayBtn.className = "px-3 py-2 rounded-xl bg-slate-800 text-slate-500 font-black text-xs sm:text-sm border border-slate-700/60 opacity-50 cursor-not-allowed transition-all";
 
             timeText.textContent = "시간: 00:00";
             freqText.textContent = "대기";
@@ -351,7 +351,7 @@
                     audioPlayer.load();
 
                     playBtn.disabled = false;
-                    playBtn.className = "px-3.5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black text-sm shadow cursor-pointer transition-all";
+                    playBtn.className = "px-3 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black text-xs sm:text-sm shadow cursor-pointer transition-all";
                 };
                 mediaRecorder.start();
 
