@@ -3,102 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>하모니카 프로 파형 분석기 | 무설치 한글 분석기</title>
+    <title>하모니카 파형 연습기</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Noto Sans KR', sans-serif; background-color: #080c14; color: #f1f5f9; touch-action: manipulation; }
         .glass-card { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); }
-        .waveform-scroll-container::-webkit-scrollbar { height: 8px; }
+        .ads-placeholder { background: rgba(30, 41, 59, 0.4); border: 1px dashed rgba(148, 163, 184, 0.25); }
+        .waveform-scroll-container::-webkit-scrollbar { height: 6px; }
         .waveform-scroll-container::-webkit-scrollbar-track { background: #020617; }
-        .waveform-scroll-container::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-        .waveform-scroll-container::-webkit-scrollbar-thumb:hover { background: #0d9488; }
+        .waveform-scroll-container::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between">
 
     <!-- 상단 헤더 -->
     <header class="w-full border-b border-slate-800 bg-slate-900/90 sticky top-0 z-50 backdrop-blur">
-        <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-            <div class="flex items-center space-x-2.5">
-                <span class="text-2xl">🎷</span>
-                <h1 class="text-lg sm:text-xl font-bold bg-gradient-to-r from-teal-400 via-emerald-400 to-blue-500 bg-clip-text text-transparent">
-                    하모니카 프로 파형 분석기
+        <div class="max-w-5xl mx-auto px-4 py-2.5 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <span class="text-xl">🎷</span>
+                <h1 class="text-base sm:text-lg font-bold bg-gradient-to-r from-teal-400 to-blue-500 bg-clip-text text-transparent">
+                    하모니카 파형 연습기
                 </h1>
             </div>
-            <span class="text-xs px-2.5 py-1 rounded-full bg-teal-950 text-teal-300 border border-teal-800 font-semibold">
-                원음 음질 & 커서 재생 지원
+            <span class="text-[11px] px-2 py-0.5 rounded bg-teal-950 text-teal-300 border border-teal-800 font-medium">
+                실시간 분석
             </span>
         </div>
     </header>
 
-    <main class="max-w-6xl mx-auto px-3 sm:px-4 py-4 sm:py-6 w-full space-y-4 flex-grow">
+    <main class="max-w-5xl mx-auto px-3 sm:px-4 py-3 w-full space-y-3 flex-grow">
 
-        <!-- 컨트롤 카드 -->
-        <div class="glass-card rounded-2xl p-4 sm:p-6 shadow-2xl space-y-4">
+        <!-- 상단 애드센스 광고 영역 -->
+        <div class="ads-placeholder w-full h-16 sm:h-20 rounded-xl flex items-center justify-between px-4 text-slate-500 text-xs">
+            <span>[구글 애드센스 상단 광고 영역]</span>
+            <span class="text-[10px] bg-slate-800 px-1.5 py-0.5 rounded">광고</span>
+        </div>
 
-            <!-- 상단 컨트롤 버튼 및 디스플레이 -->
-            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-4">
-                <div class="flex items-center space-x-3">
-                    <div id="statusDot" class="w-3.5 h-3.5 rounded-full bg-slate-600 shadow-sm"></div>
+        <!-- 컨트롤 Card -->
+        <div class="glass-card rounded-xl p-3.5 sm:p-5 space-y-3">
+
+            <!-- 컨트롤 버튼 및 상태 디스플레이 -->
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/80 pb-3">
+                <div class="flex items-center space-x-2">
+                    <div id="statusDot" class="w-3 h-3 rounded-full bg-slate-600"></div>
                     <div>
-                        <div id="statusText" class="text-sm font-bold text-slate-300">마이크 대기 중</div>
-                        <div id="timeText" class="text-xs font-mono text-slate-500">녹음 시간: 00:00</div>
+                        <div id="statusText" class="text-xs font-bold text-slate-300">대기 중</div>
+                        <div id="timeText" class="text-[11px] font-mono text-slate-500">시간: 00:00</div>
                     </div>
                 </div>
 
-                <div class="flex items-center space-x-2 w-full sm:w-auto justify-end">
-                    <button id="toggleMicBtn" class="flex-1 sm:flex-initial px-5 py-3 rounded-xl bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-400 hover:to-blue-500 text-white font-bold text-xs sm:text-sm shadow-lg transition-all flex items-center justify-center space-x-1.5">
-                        <span id="btnText">실시간 측정 시작</span>
+                <div class="flex items-center space-x-1.5 w-full sm:w-auto justify-end">
+                    <button id="toggleMicBtn" class="flex-1 sm:flex-initial px-3.5 py-2 rounded-lg bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs transition-all">
+                        <span id="btnText">측정 시작</span>
                     </button>
-                    <button id="playBtn" disabled class="px-4 py-3 rounded-xl bg-slate-800 text-slate-500 font-semibold text-xs sm:text-sm border border-slate-700/60 flex items-center space-x-1 transition-all opacity-50 cursor-not-allowed">
-                        <span>▶️</span> <span>파형 함께 들어보기</span>
+                    <button id="playBtn" disabled class="px-3 py-2 rounded-lg bg-slate-800 text-slate-500 font-bold text-xs border border-slate-700/60 opacity-50 cursor-not-allowed transition-all">
+                        듣기
                     </button>
-                    <button id="resetBtn" class="px-3.5 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs sm:text-sm transition-all border border-slate-700">
+                    <button id="stopPlayBtn" disabled class="px-3 py-2 rounded-lg bg-slate-800 text-slate-500 font-bold text-xs border border-slate-700/60 opacity-50 cursor-not-allowed transition-all">
+                        정지
+                    </button>
+                    <button id="resetBtn" class="px-2.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs border border-slate-700 transition-all">
                         초기화
                     </button>
                 </div>
             </div>
 
             <!-- 파형 트랙 영역 -->
-            <div class="space-y-1.5">
-                <div class="flex justify-between items-center text-xs font-mono text-slate-400 px-1">
-                    <span class="flex items-center gap-1.5 text-teal-400 font-semibold">
-                        <span>↔️</span> <span>재생 시 붉은선 커서가 소리와 위치를 정확히 일치시켜 줍니다</span>
-                    </span>
-                    <span id="freqText" class="text-teal-400 font-semibold">대기 중</span>
+            <div class="space-y-1">
+                <div class="flex justify-between items-center text-[11px] font-mono text-slate-400 px-0.5">
+                    <span>파형 스크롤 / 재생 시 커서 이동</span>
+                    <span id="freqText" class="text-teal-400 font-semibold">대기</span>
                 </div>
 
                 <!-- 스크롤 컨테이너 -->
-                <div id="scrollContainer" class="waveform-scroll-container relative w-full h-52 sm:h-64 bg-slate-950 rounded-xl overflow-x-auto overflow-y-hidden border border-slate-800 shadow-inner">
+                <div id="scrollContainer" class="waveform-scroll-container relative w-full h-48 sm:h-56 bg-slate-950 rounded-lg overflow-x-auto overflow-y-hidden border border-slate-800 shadow-inner">
                     <canvas id="waveformCanvas" class="h-full block"></canvas>
                 </div>
             </div>
 
-            <!-- 파형 가이드 -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
-                <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 space-y-1">
-                    <div class="text-xs font-bold text-teal-400">🎶 저음 vs 고음 파장 구분</div>
-                    <p class="text-[11px] text-slate-400 leading-relaxed">저음은 파장이 널찍하게 퍼지고, 고음은 파장이 높고 촘촘하게 솟아오릅니다.</p>
+            <!-- 요약 가이드 -->
+            <div class="grid grid-cols-3 gap-2 pt-0.5 text-center text-[11px]">
+                <div class="bg-slate-900/80 border border-slate-800 rounded-lg p-2">
+                    <div class="font-bold text-teal-400">단음</div>
+                    <div class="text-slate-400 text-[10px]">매끄러운 띠</div>
                 </div>
-                <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 space-y-1">
-                    <div class="text-xs font-bold text-blue-400">💥 베이스 순간 타격 기둥</div>
-                    <p class="text-[11px] text-slate-400 leading-relaxed">텅블록 베이스를 찍으면 수직 기둥 스파이크가 뚜렷하게 도드라집니다.</p>
+                <div class="bg-slate-900/80 border border-slate-800 rounded-lg p-2">
+                    <div class="font-bold text-blue-400">베이스</div>
+                    <div class="text-slate-400 text-[10px]">수직 기둥</div>
                 </div>
-                <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 space-y-1">
-                    <div class="text-xs font-bold text-purple-400">🎧 재생 시 위치 매칭</div>
-                    <p class="text-[11px] text-slate-400 leading-relaxed">`[들어보기]` 누르면 붉은 커서가 파형 위를 지나가며 소리와 일치됩니다.</p>
+                <div class="bg-slate-900/80 border border-slate-800 rounded-lg p-2">
+                    <div class="font-bold text-purple-400">비브라토</div>
+                    <div class="text-slate-400 text-[10px]">규칙적 물결</div>
                 </div>
             </div>
 
         </div>
+
+        <!-- 하단 애드센스 광고 영역 -->
+        <div class="ads-placeholder w-full h-20 sm:h-24 rounded-xl flex items-center justify-between px-4 text-slate-500 text-xs">
+            <span>[구글 애드센스 하단 광고 영역]</span>
+            <span class="text-[10px] bg-slate-800 px-1.5 py-0.5 rounded">광고</span>
+        </div>
+
     </main>
 
-    <footer class="w-full border-t border-slate-800 bg-slate-950 py-4 text-center text-xs text-slate-500">
-        <p>© 2026 Harmonica Pro Waveform Analyzer. Raw Audio Engine Applied.</p>
+    <footer class="w-full border-t border-slate-800 bg-slate-950 py-3 text-center text-[11px] text-slate-500">
+        <p>© 2026 Harmonica Waveform Analyzer</p>
     </footer>
 
-    <!-- 오디오 엔진 스크립트 -->
+    <!-- 자바스크립트 엔진 -->
     <script>
         let audioCtx = null;
         let analyser = null;
@@ -117,6 +131,7 @@
 
         const toggleMicBtn = document.getElementById('toggleMicBtn');
         const playBtn = document.getElementById('playBtn');
+        const stopPlayBtn = document.getElementById('stopPlayBtn');
         const resetBtn = document.getElementById('resetBtn');
         const btnText = document.getElementById('btnText');
         const statusDot = document.getElementById('statusDot');
@@ -129,9 +144,7 @@
         const ctx = canvas.getContext('2d');
 
         let waveHistory = [];
-        // 가로 20% 확대: 0.4px -> 0.48px로 설정
         const xStep = 0.48; 
-        // 왼쪽 여백: 약 1cm (약 40px)
         const leftPadding = 40; 
 
         function resizeCanvas() {
@@ -152,26 +165,44 @@
             }
         });
 
-        // 들어보기 (소리와 파형 매칭 재생)
+        // [듣기]
         playBtn.addEventListener('click', () => {
             if (recordedAudioUrl && !isPlaying) {
                 audioPlayer.src = recordedAudioUrl;
-                audioPlayer.currentTime = 0;
                 audioPlayer.play();
                 isPlaying = true;
-                statusText.textContent = "소리 & 파형 매칭 재생 중...";
-                statusText.className = "text-sm font-bold text-blue-400";
+                statusText.textContent = "소리 재생 중";
+                statusText.className = "text-xs font-bold text-blue-400";
+                
+                stopPlayBtn.disabled = false;
+                stopPlayBtn.className = "px-3 py-2 rounded-lg bg-red-600 hover:bg-red-500 text-white font-bold text-xs shadow cursor-pointer transition-all";
+
                 animatePlayback();
             }
         });
 
+        // [정지] 버튼 클릭 시
+        stopPlayBtn.addEventListener('click', () => {
+            stopPlayback();
+        });
+
         audioPlayer.onended = () => {
+            stopPlayback();
+        };
+
+        function stopPlayback() {
+            if (audioPlayer) audioPlayer.pause();
             isPlaying = false;
             if (playbackAnimId) cancelAnimationFrame(playbackAnimId);
-            statusText.textContent = "측정 일시정지됨";
-            statusText.className = "text-sm font-bold text-slate-300";
+            
+            statusText.textContent = "일시정지됨";
+            statusText.className = "text-xs font-bold text-slate-300";
+
+            stopPlayBtn.disabled = true;
+            stopPlayBtn.className = "px-3 py-2 rounded-lg bg-slate-800 text-slate-500 font-bold text-xs border border-slate-700/60 opacity-50 cursor-not-allowed transition-all";
+
             drawWaveform();
-        };
+        }
 
         function animatePlayback() {
             if (!isPlaying) return;
@@ -183,7 +214,7 @@
 
             drawWaveform();
 
-            // 붉은색 재생 헤드 커서 그리기
+            // 붉은 막대 커서
             ctx.strokeStyle = '#ef4444';
             ctx.lineWidth = 2.5;
             ctx.beginPath();
@@ -191,7 +222,6 @@
             ctx.lineTo(currentX, canvas.height);
             ctx.stroke();
 
-            // 재생 커서가 화면 중앙에 오도록 스크롤 동기화
             scrollContainer.scrollLeft = currentX - (scrollContainer.clientWidth / 2);
 
             playbackAnimId = requestAnimationFrame(animatePlayback);
@@ -199,20 +229,21 @@
 
         resetBtn.addEventListener('click', () => {
             stopAudioProcessing();
-            isPlaying = false;
-            audioPlayer.pause();
-            if (playbackAnimId) cancelAnimationFrame(playbackAnimId);
+            stopPlayback();
             waveHistory = [];
             audioChunks = [];
             if (recordedAudioUrl) {
                 URL.revokeObjectURL(recordedAudioUrl);
                 recordedAudioUrl = null;
             }
-            playBtn.disabled = true;
-            playBtn.className = "px-4 py-3 rounded-xl bg-slate-800 text-slate-500 font-semibold text-xs sm:text-sm border border-slate-700/60 opacity-50 cursor-not-allowed";
             
-            timeText.textContent = "녹음 시간: 00:00";
-            freqText.textContent = "대기 중";
+            playBtn.disabled = true;
+            playBtn.className = "px-3 py-2 rounded-lg bg-slate-800 text-slate-500 font-bold text-xs border border-slate-700/60 opacity-50 cursor-not-allowed transition-all";
+            stopPlayBtn.disabled = true;
+            stopPlayBtn.className = "px-3 py-2 rounded-lg bg-slate-800 text-slate-500 font-bold text-xs border border-slate-700/60 opacity-50 cursor-not-allowed transition-all";
+
+            timeText.textContent = "시간: 00:00";
+            freqText.textContent = "대기";
             canvas.width = scrollContainer.clientWidth;
             scrollContainer.scrollLeft = 0;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -238,7 +269,7 @@
                     const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
                     recordedAudioUrl = URL.createObjectURL(audioBlob);
                     playBtn.disabled = false;
-                    playBtn.className = "px-4 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs sm:text-sm shadow-lg cursor-pointer";
+                    playBtn.className = "px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow cursor-pointer transition-all";
                 };
                 mediaRecorder.start();
 
@@ -250,10 +281,10 @@
                 microphone.connect(analyser);
 
                 isListening = true;
-                btnText.textContent = "측정 정지하기";
-                statusDot.className = "w-3.5 h-3.5 rounded-full bg-emerald-500 animate-pulse shadow-lg";
-                statusText.textContent = "실시간 파형 기록 중...";
-                statusText.className = "text-sm font-bold text-emerald-400";
+                btnText.textContent = "측정 정지";
+                statusDot.className = "w-3 h-3 rounded-full bg-emerald-500 animate-pulse";
+                statusText.textContent = "기록 중";
+                statusText.className = "text-xs font-bold text-emerald-400";
 
                 startTime = Date.now();
                 timerInterval = setInterval(updateTimer, 1000);
@@ -261,7 +292,7 @@
 
                 processAudio();
             } catch (err) {
-                alert("마이크 접근 권한이 필요합니다: " + err.message);
+                alert("마이크 권한 필요: " + err.message);
             }
         }
 
@@ -283,17 +314,17 @@
             }
 
             isListening = false;
-            btnText.textContent = "실시간 측정 시작";
-            statusDot.className = "w-3.5 h-3.5 rounded-full bg-slate-600";
-            statusText.textContent = "측정 일시정지됨";
-            statusText.className = "text-sm font-bold text-slate-300";
+            btnText.textContent = "측정 시작";
+            statusDot.className = "w-3 h-3 rounded-full bg-slate-600";
+            statusText.textContent = "일시정지됨";
+            statusText.className = "text-xs font-bold text-slate-300";
         }
 
         function updateTimer() {
             const elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
             const mins = String(Math.floor(elapsedSeconds / 60)).padStart(2, '0');
             const secs = String(elapsedSeconds % 60).padStart(2, '0');
-            timeText.textContent = `녹음 시간: ${mins}:${secs}`;
+            timeText.textContent = `시간: ${mins}:${secs}`;
         }
 
         function processAudio() {
@@ -326,9 +357,9 @@
             let fundamentalFreq = 0;
             if (maxFreqVal > 30) {
                 fundamentalFreq = Math.round(maxFreqIdx * audioCtx.sampleRate / analyser.fftSize);
-                freqText.textContent = `실시간 음역: ${fundamentalFreq} Hz`;
+                freqText.textContent = `${fundamentalFreq} Hz`;
             } else {
-                freqText.textContent = "소리 대기 중...";
+                freqText.textContent = "대기";
             }
 
             let freqWeight = Math.min(1.4, Math.max(0.7, fundamentalFreq / 400));
@@ -347,7 +378,6 @@
 
             drawWaveform();
 
-            // 왼쪽 1cm 지점에서 시작하여 화면 오른쪽 가장자리에 다가갈 때부터 왼쪽으로 부드럽게 스크롤
             const rightThreshold = scrollContainer.clientWidth - 50;
             if (currentWaveX - scrollContainer.scrollLeft > rightThreshold) {
                 scrollContainer.scrollLeft = currentWaveX - rightThreshold;
@@ -360,7 +390,6 @@
             ctx.fillStyle = '#020617';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // 기준 그리드선
             ctx.strokeStyle = 'rgba(51, 65, 85, 0.3)';
             ctx.lineWidth = 1;
             ctx.setLineDash([3, 3]);
@@ -385,7 +414,6 @@
 
             ctx.beginPath();
             
-            // 상단 외곽선 (세로 피크 높이 10% 축소: 0.9 -> 0.78 보정)
             for (let i = 0; i < waveHistory.length; i++) {
                 const x = leftPadding + (i * xStep);
                 const item = waveHistory[i];
@@ -395,7 +423,6 @@
                 else ctx.lineTo(x, y);
             }
 
-            // 하단 외곽선
             for (let i = waveHistory.length - 1; i >= 0; i--) {
                 const x = leftPadding + (i * xStep);
                 const item = waveHistory[i];
