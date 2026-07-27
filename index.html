@@ -308,33 +308,44 @@
                 x += barWidth + 1;
             }
 
-            // 음량이 일정 수준 이상일 때만 분석 수행 (신호 존재 여부)
             const avgEnergy = totalEnergy / bufferLength;
-            if (avgEnergy > 8) {
+
+            // 소리 입력이 충분할 때만 진단 (스마트폰 마이크 노이즈 임계값 보정)
+            if (maxVal > 45 && avgEnergy > 4) {
                 // 1. 피치(기본 주파수) 및 주파수 피크 계산
                 const sampleRate = audioCtx.sampleRate;
                 const fundamentalFreq = Math.round(maxIndex * sampleRate / analyser.fftSize);
                 pitchText.textContent = `주 주파수: ${fundamentalFreq} Hz`;
 
-                // 2. 맑은 음 (Signal-to-Noise Ratio) 분석
-                // 피크 주변 에너지 대비 전체 평균 잡음 에너지 비교
-                let peakAreaEnergy = 0;
-                for (let k = Math.max(0, maxIndex - 3); k <= Math.min(bufferLength - 1, maxIndex + 3); k++) {
-                    peakAreaEnergy += dataArray[k];
+                // 2. [보정된 맑은 음 (소리 순도)]
+                // 스마트폰 노이즈 캔슬링 피크 집중도 정밀 계산
+                let peakEnergy = 0;
+                const range = 4;
+                for (let k = Math.max(0, maxIndex - range); k <= Math.min(bufferLength - 1, maxIndex + range); k++) {
+                    peakEnergy += dataArray[k];
                 }
-                const noiseEnergy = totalEnergy - peakAreaEnergy;
-                const clarityRatio = Math.min(100, Math.max(10, Math.round((peakAreaEnergy / (totalEnergy + 1)) * 180)));
+                
+                let rawClarity = (peakEnergy / (totalEnergy + 1)) * 100;
+                let clarityRatio = Math.min(98, Math.max(20, Math.round(rawClarity * 2.3)));
 
-                // 3. 깊은 음 (Harmonics / 배음 울림) 분석
-                // 2차, 3차 배음 위치의 에너지 합산
-                let harmonicsEnergy = 0;
+                // 3. [보정된 깊은 음 (배음 울림)]
+                // 2차, 3차, 4차 배음의 유효 존재 비율 계산 (100점 쏠림 방지)
+                let harmonicCount = 0;
+                let harmonicSum = 0;
+
                 for (let h = 2; h <= 4; h++) {
                     const hIndex = maxIndex * h;
                     if (hIndex < bufferLength) {
-                        harmonicsEnergy += dataArray[hIndex];
+                        const hVal = dataArray[hIndex];
+                        if (hVal > maxVal * 0.15) {
+                            harmonicSum += hVal;
+                            harmonicCount++;
+                        }
                     }
                 }
-                const depthRatio = Math.min(100, Math.max(15, Math.round((harmonicsEnergy / (maxVal + 1)) * 110)));
+
+                let rawDepth = (harmonicSum / (maxVal * 3)) * 100;
+                let depthRatio = Math.min(95, Math.max(15, Math.round(rawDepth * 1.4 + (harmonicCount * 12))));
 
                 // UI 수치 업데이트
                 clarityScoreEl.innerHTML = `${clarityRatio}<span class="text-xs text-slate-500 font-normal">점</span>`;
@@ -347,7 +358,7 @@
                 updateFeedback(clarityRatio, depthRatio);
 
             } else {
-                pitchText.textContent = "연주 소리를 기다리는 중...";
+                pitchText.textContent = "연주 소리를 기다리는 중 (단음을 길게 불어주세요)...";
             }
 
             animationFrameId = requestAnimationFrame(drawSpectrumAndAnalyze);
