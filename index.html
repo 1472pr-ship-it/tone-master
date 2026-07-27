@@ -73,7 +73,7 @@
                 </div>
             </div>
 
-            <!-- 스크롤 가능한 실시간 파형 영역 (가로 30% 밀도 압축) -->
+            <!-- 스크롤 가능한 실시간 파형 영역 -->
             <div class="space-y-1.5">
                 <div class="flex justify-between items-center text-xs font-mono text-slate-400 px-1">
                     <span class="flex items-center gap-1.5 text-teal-400 font-semibold">
@@ -171,8 +171,8 @@
         const ctx = canvas.getContext('2d');
 
         let waveHistory = [];
-        // 가로 30% 밀도 압축을 위한 픽셀당 간격 (긴 연주 구절도 한눈에 표현)
-        const xStep = 0.8; 
+        // 가로 50% 추가 밀도 압축 (0.4px로 변경)
+        const xStep = 0.4; 
 
         function resizeCanvas() {
             const minWidth = scrollContainer.clientWidth;
@@ -229,7 +229,6 @@
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
                 
-                // 오디오 녹음기 세팅 (들어보기 기능)
                 mediaRecorder = new MediaRecorder(stream);
                 audioChunks = [];
                 mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
@@ -243,7 +242,7 @@
 
                 analyser = audioCtx.createAnalyser();
                 analyser.fftSize = 2048;
-                analyser.smoothingTimeConstant = 0.3;
+                analyser.smoothingTimeConstant = 0.2; // 즉각적 파형 반응성
 
                 microphone = audioCtx.createMediaStreamSource(stream);
                 microphone.connect(analyser);
@@ -342,7 +341,7 @@
 
             waveHistory.push({ amp: ampRange });
 
-            // 캔버스 너비 확장 및 자동 스크롤
+            // 캔버스 너비 확장
             const requiredWidth = Math.max(scrollContainer.clientWidth, waveHistory.length * xStep);
             if (canvas.width !== requiredWidth) {
                 canvas.width = requiredWidth;
@@ -350,8 +349,8 @@
 
             drawWaveform();
 
-            // 녹음 중 우측 끝으로 자동 스크롤
-            scrollContainer.scrollLeft = scrollContainer.scrollWidth;
+            // 즉시 실시간 추적: 스크롤을 우측 끝으로 바로 고정
+            scrollContainer.scrollLeft = scrollContainer.scrollWidth - scrollContainer.clientWidth;
 
             animationFrameId = requestAnimationFrame(processAudio);
         }
@@ -371,7 +370,7 @@
             gradient.addColorStop(0.5, '#3b82f6');
             gradient.addColorStop(1, '#a855f7');
 
-            ctx.lineWidth = 1.5;
+            ctx.lineWidth = 1.2;
             ctx.strokeStyle = '#38bdf8';
             ctx.fillStyle = gradient;
 
