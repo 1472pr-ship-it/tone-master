@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>하모니카 프로 파형 연습기 | 무설치 한글 분석기</title>
+    <title>하모니카 프로 파형 분석기 | 무설치 한글 분석기</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
@@ -64,7 +64,7 @@
             <div class="space-y-1.5">
                 <div class="flex justify-between items-center text-xs font-mono text-slate-400 px-1">
                     <span class="flex items-center gap-1.5 text-teal-400 font-semibold">
-                        <span>↔️</span> <span>재생 시 붉은선 커서가 소리와 위치를 매칭해 줍니다</span>
+                        <span>↔️</span> <span>재생 시 붉은선 커서가 소리와 위치를 정확히 일치시켜 줍니다</span>
                     </span>
                     <span id="freqText" class="text-teal-400 font-semibold">대기 중</span>
                 </div>
@@ -111,6 +111,7 @@
         let isListening = false;
         let isPlaying = false;
         let animationFrameId = null;
+        let playbackAnimId = null;
         let startTime = 0;
         let timerInterval = null;
 
@@ -128,11 +129,14 @@
         const ctx = canvas.getContext('2d');
 
         let waveHistory = [];
-        const xStep = 0.4; // 고밀도 파형 압축
+        // 가로 20% 확대: 0.4px -> 0.48px로 설정
+        const xStep = 0.48; 
+        // 왼쪽 여백: 약 1cm (약 40px)
+        const leftPadding = 40; 
 
         function resizeCanvas() {
             const minWidth = scrollContainer.clientWidth;
-            const contentWidth = Math.max(minWidth, waveHistory.length * xStep);
+            const contentWidth = Math.max(minWidth, leftPadding + waveHistory.length * xStep + 100);
             canvas.width = contentWidth;
             canvas.height = scrollContainer.clientHeight;
             drawWaveform();
@@ -152,6 +156,7 @@
         playBtn.addEventListener('click', () => {
             if (recordedAudioUrl && !isPlaying) {
                 audioPlayer.src = recordedAudioUrl;
+                audioPlayer.currentTime = 0;
                 audioPlayer.play();
                 isPlaying = true;
                 statusText.textContent = "소리 & 파형 매칭 재생 중...";
@@ -162,6 +167,7 @@
 
         audioPlayer.onended = () => {
             isPlaying = false;
+            if (playbackAnimId) cancelAnimationFrame(playbackAnimId);
             statusText.textContent = "측정 일시정지됨";
             statusText.className = "text-sm font-bold text-slate-300";
             drawWaveform();
@@ -169,29 +175,33 @@
 
         function animatePlayback() {
             if (!isPlaying) return;
-            const progress = audioPlayer.currentTime / audioPlayer.duration;
-            const currentX = progress * (waveHistory.length * xStep);
+            
+            const duration = audioPlayer.duration || 1;
+            const progress = audioPlayer.currentTime / duration;
+            const totalWaveX = waveHistory.length * xStep;
+            const currentX = leftPadding + (progress * totalWaveX);
 
             drawWaveform();
 
             // 붉은색 재생 헤드 커서 그리기
             ctx.strokeStyle = '#ef4444';
-            ctx.lineWidth = 2;
+            ctx.lineWidth = 2.5;
             ctx.beginPath();
             ctx.moveTo(currentX, 0);
             ctx.lineTo(currentX, canvas.height);
             ctx.stroke();
 
-            // 재생 위치로 스크롤 자동 이동
+            // 재생 커서가 화면 중앙에 오도록 스크롤 동기화
             scrollContainer.scrollLeft = currentX - (scrollContainer.clientWidth / 2);
 
-            requestAnimationFrame(animatePlayback);
+            playbackAnimId = requestAnimationFrame(animatePlayback);
         }
 
         resetBtn.addEventListener('click', () => {
             stopAudioProcessing();
             isPlaying = false;
             audioPlayer.pause();
+            if (playbackAnimId) cancelAnimationFrame(playbackAnimId);
             waveHistory = [];
             audioChunks = [];
             if (recordedAudioUrl) {
@@ -204,6 +214,7 @@
             timeText.textContent = "녹음 시간: 00:00";
             freqText.textContent = "대기 중";
             canvas.width = scrollContainer.clientWidth;
+            scrollContainer.scrollLeft = 0;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
         });
 
@@ -211,7 +222,6 @@
             try {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 
-                // 동굴 울림 제거: raw 오디오 스트림 설정
                 const stream = await navigator.mediaDevices.getUserMedia({ 
                     audio: {
                         echoCancellation: false,
@@ -234,7 +244,7 @@
 
                 analyser = audioCtx.createAnalyser();
                 analyser.fftSize = 2048;
-                analyser.smoothingTimeConstant = 0.1; // 즉각적 반응성 극대화
+                analyser.smoothingTimeConstant = 0.1;
 
                 microphone = audioCtx.createMediaStreamSource(stream);
                 microphone.connect(analyser);
@@ -247,6 +257,7 @@
 
                 startTime = Date.now();
                 timerInterval = setInterval(updateTimer, 1000);
+                scrollContainer.scrollLeft = 0;
 
                 processAudio();
             } catch (err) {
@@ -301,10 +312,8 @@
                 if (timeData[i] > maxVal) maxVal = timeData[i];
             }
 
-            // 진폭 계산
             const ampRange = (maxVal - minVal) / 256;
 
-            // 주파수(Hz) 계산을 파형 높이 가중치에 반영
             let maxFreqVal = 0;
             let maxFreqIdx = 0;
             for (let j = 0; j < freqData.length; j++) {
@@ -322,9 +331,7 @@
                 freqText.textContent = "소리 대기 중...";
             }
 
-            // 음높이(Hz) 기반 파형 높이 및 반응 가중치 연산
-            // 고음일수록 스파이크가 솟고, 저음일수록 파형이 두툼하게 잡힘
-            let freqWeight = Math.min(1.8, Math.max(0.6, fundamentalFreq / 400));
+            let freqWeight = Math.min(1.4, Math.max(0.7, fundamentalFreq / 400));
             
             waveHistory.push({ 
                 amp: ampRange,
@@ -332,15 +339,19 @@
                 weight: freqWeight
             });
 
-            const requiredWidth = Math.max(scrollContainer.clientWidth, waveHistory.length * xStep);
+            const currentWaveX = leftPadding + (waveHistory.length * xStep);
+            const requiredWidth = Math.max(scrollContainer.clientWidth, currentWaveX + 100);
             if (canvas.width !== requiredWidth) {
                 canvas.width = requiredWidth;
             }
 
             drawWaveform();
 
-            // 우측 끝 즉시 추적
-            scrollContainer.scrollLeft = scrollContainer.scrollWidth - scrollContainer.clientWidth;
+            // 왼쪽 1cm 지점에서 시작하여 화면 오른쪽 가장자리에 다가갈 때부터 왼쪽으로 부드럽게 스크롤
+            const rightThreshold = scrollContainer.clientWidth - 50;
+            if (currentWaveX - scrollContainer.scrollLeft > rightThreshold) {
+                scrollContainer.scrollLeft = currentWaveX - rightThreshold;
+            }
 
             animationFrameId = requestAnimationFrame(processAudio);
         }
@@ -363,23 +374,22 @@
 
             const centerY = canvas.height / 2;
 
-            // 선명한 파형 그래디언트
             const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
             gradient.addColorStop(0, '#2dd4bf');
             gradient.addColorStop(0.5, '#3b82f6');
             gradient.addColorStop(1, '#a855f7');
 
-            ctx.lineWidth = 1.5;
+            ctx.lineWidth = 1.2;
             ctx.strokeStyle = '#38bdf8';
             ctx.fillStyle = gradient;
 
             ctx.beginPath();
             
-            // 상단 외곽선 (음높이 가중치 보정 적용)
+            // 상단 외곽선 (세로 피크 높이 10% 축소: 0.9 -> 0.78 보정)
             for (let i = 0; i < waveHistory.length; i++) {
-                const x = i * xStep;
+                const x = leftPadding + (i * xStep);
                 const item = waveHistory[i];
-                const h = (item.amp * canvas.height * item.weight) * 0.9;
+                const h = (item.amp * canvas.height * item.weight) * 0.78;
                 const y = centerY - (h / 2);
                 if (i === 0) ctx.moveTo(x, y);
                 else ctx.lineTo(x, y);
@@ -387,9 +397,9 @@
 
             // 하단 외곽선
             for (let i = waveHistory.length - 1; i >= 0; i--) {
-                const x = i * xStep;
+                const x = leftPadding + (i * xStep);
                 const item = waveHistory[i];
-                const h = (item.amp * canvas.height * item.weight) * 0.9;
+                const h = (item.amp * canvas.height * item.weight) * 0.78;
                 const y = centerY + (h / 2);
                 ctx.lineTo(x, y);
             }
