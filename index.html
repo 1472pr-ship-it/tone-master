@@ -72,13 +72,22 @@
             <!-- 파형 트랙 영역 -->
             <div class="space-y-1">
                 <div class="flex justify-between items-center text-[11px] font-mono text-slate-400 px-0.5">
-                    <span>파형 스크롤 / 재생 시 커서 이동</span>
+                    <span>중앙 고정 커서 (스크롤 시 위치 탐색 / 재생 시 파형 이동)</span>
                     <span id="freqText" class="text-teal-400 font-semibold">대기</span>
                 </div>
 
-                <!-- 스크롤 컨테이너 -->
-                <div id="scrollContainer" class="waveform-scroll-container relative w-full h-48 sm:h-56 bg-slate-950 rounded-lg overflow-x-auto overflow-y-hidden border border-slate-800 shadow-inner">
-                    <canvas id="waveformCanvas" class="h-full block"></canvas>
+                <!-- 파형 스크롤 컨테이너 + 화면 중앙 고정 빨간 커서 -->
+                <div class="relative w-full h-48 sm:h-56 rounded-lg overflow-hidden border border-slate-800 shadow-inner bg-slate-950">
+                    
+                    <!-- 화면 중앙 세로 고정 붉은 커서 (독립 레이어) -->
+                    <div class="absolute top-0 bottom-0 left-1/2 w-0.5 bg-red-500 z-20 pointer-events-none shadow-[0_0_8px_rgba(239,68,68,0.8)]">
+                        <div class="w-2 h-2 bg-red-500 rotate-45 -translate-x-0.75 -mt-1"></div>
+                    </div>
+
+                    <!-- 가로 스크롤 가능한 파형 캔버스 영역 -->
+                    <div id="scrollContainer" class="waveform-scroll-container relative w-full h-full overflow-x-auto overflow-y-hidden">
+                        <canvas id="waveformCanvas" class="h-full block"></canvas>
+                    </div>
                 </div>
             </div>
 
@@ -129,9 +138,6 @@
         let startTime = 0;
         let timerInterval = null;
 
-        // 커서 위치 유지를 위한 변수
-        let lastCursorX = null;
-
         const toggleMicBtn = document.getElementById('toggleMicBtn');
         const playBtn = document.getElementById('playBtn');
         const stopPlayBtn = document.getElementById('stopPlayBtn');
@@ -148,11 +154,16 @@
 
         let waveHistory = [];
         const xStep = 0.48; 
-        const leftPadding = 40; 
+
+        // 파형의 시작과 끝이 화면 중앙에 닿을 수 있도록 앞뒤로 여백(화면 반너비) 추가
+        function getHalfWidth() {
+            return scrollContainer.clientWidth / 2;
+        }
 
         function resizeCanvas() {
-            const minWidth = scrollContainer.clientWidth;
-            const contentWidth = Math.max(minWidth, leftPadding + waveHistory.length * xStep + 100);
+            const halfW = getHalfWidth();
+            const totalWaveWidth = waveHistory.length * xStep;
+            const contentWidth = Math.max(scrollContainer.clientWidth, halfW + totalWaveWidth + halfW);
             canvas.width = contentWidth;
             canvas.height = scrollContainer.clientHeight;
             drawWaveform();
@@ -168,6 +179,19 @@
             }
         });
 
+        // 사용자 손가락 스크롤 시 해당 파형 위치의 소리로 재생 위치 탐색(Seeking)
+        scrollContainer.addEventListener('scroll', () => {
+            if (!isPlaying && recordedAudioUrl && audioPlayer.duration) {
+                const halfW = getHalfWidth();
+                const totalWaveWidth = waveHistory.length * xStep;
+                if (totalWaveWidth > 0) {
+                    const progress = scrollContainer.scrollLeft / totalWaveWidth;
+                    const targetTime = Math.max(0, Math.min(audioPlayer.duration, progress * audioPlayer.duration));
+                    audioPlayer.currentTime = targetTime;
+                }
+            }
+        });
+
         // [듣기]
         playBtn.addEventListener('click', () => {
             if (recordedAudioUrl) {
@@ -175,7 +199,14 @@
                     audioPlayer.play();
                 } else {
                     audioPlayer.src = recordedAudioUrl;
-                    audioPlayer.currentTime = 0;
+                    const halfW = getHalfWidth();
+                    const totalWaveWidth = waveHistory.length * xStep;
+                    if (totalWaveWidth > 0) {
+                        const progress = scrollContainer.scrollLeft / totalWaveWidth;
+                        audioPlayer.currentTime = Math.max(0, Math.min(audioPlayer.duration, progress * audioPlayer.duration));
+                    } else {
+                        audioPlayer.currentTime = 0;
+                    }
                     audioPlayer.play();
                 }
 
@@ -190,16 +221,16 @@
             }
         });
 
-        // [정지] 버튼 클릭 시
+        // [정지]
         stopPlayBtn.addEventListener('click', () => {
-            stopPlayback(false); // 커서 위치 그대로 유지
+            stopPlayback();
         });
 
         audioPlayer.onended = () => {
-            stopPlayback(true); // 오디오 재생 완료 시에만 커서 초기화
+            stopPlayback();
         };
 
-        function stopPlayback(resetCursor = false) {
+        function stopPlayback() {
             if (audioPlayer) audioPlayer.pause();
             isPlaying = false;
             if (playbackAnimId) cancelAnimationFrame(playbackAnimId);
@@ -210,35 +241,28 @@
             stopPlayBtn.disabled = true;
             stopPlayBtn.className = "px-3 py-2 rounded-lg bg-slate-800 text-slate-500 font-bold text-xs border border-slate-700/60 opacity-50 cursor-not-allowed transition-all";
 
-            if (resetCursor) {
-                lastCursorX = null;
-                if (audioPlayer) audioPlayer.currentTime = 0;
-            }
-
             drawWaveform();
         }
 
+        // 재생 중: 빨간 커서는 화면 중앙에 가만히 고정되고, 파형(스크롤)이 움직임
         function animatePlayback() {
             if (!isPlaying) return;
             
             const duration = audioPlayer.duration || 1;
             const progress = audioPlayer.currentTime / duration;
-            const totalWaveX = waveHistory.length * xStep;
-            lastCursorX = leftPadding + (progress * totalWaveX);
-
-            drawWaveform();
-
-            scrollContainer.scrollLeft = lastCursorX - (scrollContainer.clientWidth / 2);
+            const totalWaveWidth = waveHistory.length * xStep;
+            
+            // 재생 시간에 맞춰 파형 스크롤 이동
+            scrollContainer.scrollLeft = progress * totalWaveWidth;
 
             playbackAnimId = requestAnimationFrame(animatePlayback);
         }
 
         resetBtn.addEventListener('click', () => {
             stopAudioProcessing();
-            stopPlayback(true);
+            stopPlayback();
             waveHistory = [];
             audioChunks = [];
-            lastCursorX = null;
             if (recordedAudioUrl) {
                 URL.revokeObjectURL(recordedAudioUrl);
                 recordedAudioUrl = null;
@@ -288,7 +312,6 @@
                 microphone.connect(analyser);
 
                 isListening = true;
-                lastCursorX = null;
                 btnText.textContent = "측정 정지";
                 statusDot.className = "w-3 h-3 rounded-full bg-emerald-500 animate-pulse";
                 statusText.textContent = "기록 중";
@@ -326,6 +349,9 @@
             statusDot.className = "w-3 h-3 rounded-full bg-slate-600";
             statusText.textContent = "일시정지됨";
             statusText.className = "text-xs font-bold text-slate-300";
+
+            // 녹음 완료 후 파형의 맨 처음 위치(중앙 고정 커서 기준)로 이동
+            scrollContainer.scrollLeft = 0;
         }
 
         function updateTimer() {
@@ -378,18 +404,11 @@
                 weight: freqWeight
             });
 
-            const currentWaveX = leftPadding + (waveHistory.length * xStep);
-            const requiredWidth = Math.max(scrollContainer.clientWidth, currentWaveX + 100);
-            if (canvas.width !== requiredWidth) {
-                canvas.width = requiredWidth;
-            }
+            resizeCanvas();
 
-            drawWaveform();
-
-            const rightThreshold = scrollContainer.clientWidth - 50;
-            if (currentWaveX - scrollContainer.scrollLeft > rightThreshold) {
-                scrollContainer.scrollLeft = currentWaveX - rightThreshold;
-            }
+            // 녹음 중에는 파형 끝이 항상 중앙 커서 위치에 오도록 자동 스크롤
+            const totalWaveWidth = waveHistory.length * xStep;
+            scrollContainer.scrollLeft = totalWaveWidth;
 
             animationFrameId = requestAnimationFrame(processAudio);
         }
@@ -398,6 +417,7 @@
             ctx.fillStyle = '#020617';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+            // 중앙 가로 기준선
             ctx.strokeStyle = 'rgba(51, 65, 85, 0.3)';
             ctx.lineWidth = 1;
             ctx.setLineDash([3, 3]);
@@ -410,6 +430,7 @@
             if (waveHistory.length === 0) return;
 
             const centerY = canvas.height / 2;
+            const halfW = getHalfWidth(); // 화면 중앙 지점부터 파형 시작
 
             const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
             gradient.addColorStop(0, '#2dd4bf');
@@ -422,8 +443,9 @@
 
             ctx.beginPath();
             
+            // 상단 파형 외곽선
             for (let i = 0; i < waveHistory.length; i++) {
-                const x = leftPadding + (i * xStep);
+                const x = halfW + (i * xStep);
                 const item = waveHistory[i];
                 const h = (item.amp * canvas.height * item.weight) * 0.78;
                 const y = centerY - (h / 2);
@@ -431,8 +453,9 @@
                 else ctx.lineTo(x, y);
             }
 
+            // 하단 파형 외곽선
             for (let i = waveHistory.length - 1; i >= 0; i--) {
-                const x = leftPadding + (i * xStep);
+                const x = halfW + (i * xStep);
                 const item = waveHistory[i];
                 const h = (item.amp * canvas.height * item.weight) * 0.78;
                 const y = centerY + (h / 2);
@@ -444,16 +467,6 @@
             ctx.fill();
             ctx.globalAlpha = 1.0;
             ctx.stroke();
-
-            // 빨간 커서 고정 표시
-            if (lastCursorX !== null) {
-                ctx.strokeStyle = '#ef4444';
-                ctx.lineWidth = 2.5;
-                ctx.beginPath();
-                ctx.moveTo(lastCursorX, 0);
-                ctx.lineTo(lastCursorX, canvas.height);
-                ctx.stroke();
-            }
         }
     </script>
 </body>
