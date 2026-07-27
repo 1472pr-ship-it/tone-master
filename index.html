@@ -41,8 +41,8 @@
     <!-- 메인 분석기 영역 -->
     <main class="max-w-5xl mx-auto px-2.5 sm:px-4 py-2 w-full space-y-2 flex-grow">
 
-        <!-- 상단 애드센스 광고 영역 -->
-        <div class="ads-placeholder w-full h-14 sm:h-18 rounded-xl flex items-center justify-between px-3.5 text-slate-400 text-xs sm:text-sm font-medium">
+        <!-- 상단 애드센스 광고 영역 (세로 100px 고정) -->
+        <div class="ads-placeholder w-full h-[100px] min-h-[100px] rounded-xl flex items-center justify-between px-3.5 text-slate-400 text-xs sm:text-sm font-medium">
             <span>[구글 애드센스 상단 광고 영역]</span>
             <span class="text-[10px] sm:text-xs bg-slate-800 px-1.5 py-0.5 rounded">광고</span>
         </div>
@@ -50,11 +50,11 @@
         <!-- 메인 분석기 Card -->
         <div class="glass-card rounded-xl p-2.5 sm:p-4 space-y-2 shadow-2xl">
 
-            <!-- 컨트롤 버튼 및 상태 디스플레이 -->
+            <!-- 컨트롤 버튼 및 상태 디스플레이 (버튼 폰트 대형화 적용) -->
             <div class="flex flex-wrap items-center justify-between gap-1.5 border-b border-slate-800/80 pb-2">
                 <div class="flex items-center space-x-2">
                     <div id="statusDot" class="w-3 h-3 rounded-full bg-slate-500"></div>
-                    <div class="flex items-center space-x-2">
+                    <div class="flex items-center space-x-1.5">
                         <span id="statusText" class="text-xs sm:text-sm font-extrabold text-slate-200">대기 중</span>
                         <span class="text-slate-600 text-xs">|</span>
                         <span id="timeText" class="text-xs sm:text-sm font-mono text-slate-300 font-bold">시간: 00:00</span>
@@ -62,16 +62,16 @@
                 </div>
 
                 <div class="flex items-center space-x-1.5 w-full sm:w-auto justify-end">
-                    <button id="toggleMicBtn" class="flex-1 sm:flex-initial px-3.5 py-2 rounded-lg bg-teal-600 hover:bg-teal-500 text-white font-black text-xs sm:text-sm transition-all shadow-md">
+                    <button id="toggleMicBtn" class="flex-1 sm:flex-initial px-3.5 sm:px-4 py-2.5 rounded-lg bg-teal-600 hover:bg-teal-500 text-white font-black text-sm sm:text-base transition-all shadow-md">
                         <span id="btnText">측정 시작</span>
                     </button>
-                    <button id="playBtn" disabled class="px-3 py-2 rounded-lg bg-slate-800 text-slate-500 font-black text-xs sm:text-sm border border-slate-700/60 opacity-50 cursor-not-allowed transition-all">
+                    <button id="playBtn" disabled class="px-3.5 sm:px-4 py-2.5 rounded-lg bg-slate-800 text-slate-500 font-black text-sm sm:text-base border border-slate-700/60 opacity-50 cursor-not-allowed transition-all">
                         듣기
                     </button>
-                    <button id="stopPlayBtn" disabled class="px-3 py-2 rounded-lg bg-slate-800 text-slate-500 font-black text-xs sm:text-sm border border-slate-700/60 opacity-50 cursor-not-allowed transition-all">
+                    <button id="stopPlayBtn" disabled class="px-3.5 sm:px-4 py-2.5 rounded-lg bg-slate-800 text-slate-500 font-black text-sm sm:text-base border border-slate-700/60 opacity-50 cursor-not-allowed transition-all">
                         정지
                     </button>
-                    <button id="resetBtn" class="px-2.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs sm:text-sm border border-slate-700 transition-all">
+                    <button id="resetBtn" class="px-3 sm:px-3.5 py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-black text-sm sm:text-base border border-slate-700 transition-all">
                         초기화
                     </button>
                 </div>
@@ -85,7 +85,7 @@
                 </div>
 
                 <!-- 파형 스크롤 컨테이너 -->
-                <div class="relative w-full h-44 sm:h-52 rounded-lg overflow-hidden border border-slate-800 shadow-inner bg-slate-950">
+                <div class="relative w-full h-40 sm:h-48 rounded-lg overflow-hidden border border-slate-800 shadow-inner bg-slate-950">
                     
                     <!-- 화면 중앙 세로 고정 붉은 커서 -->
                     <div class="absolute top-0 bottom-0 left-1/2 w-0.5 bg-red-500 z-20 pointer-events-none shadow-[0_0_8px_rgba(239,68,68,0.8)]">
@@ -260,7 +260,7 @@
                 statusText.className = "text-xs sm:text-sm font-extrabold text-blue-400";
                 
                 stopPlayBtn.disabled = false;
-                stopPlayBtn.className = "px-3 py-2 rounded-lg bg-red-600 hover:bg-red-500 text-white font-black text-xs sm:text-sm shadow cursor-pointer transition-all";
+                stopPlayBtn.className = "px-3.5 sm:px-4 py-2.5 rounded-lg bg-red-600 hover:bg-red-500 text-white font-black text-sm sm:text-base shadow cursor-pointer transition-all";
 
                 animatePlayback();
             }
@@ -285,7 +285,7 @@
             statusText.className = "text-xs sm:text-sm font-extrabold text-slate-200";
 
             stopPlayBtn.disabled = true;
-            stopPlayBtn.className = "px-3 py-2 rounded-lg bg-slate-800 text-slate-500 font-black text-xs sm:text-sm border border-slate-700/60 opacity-50 cursor-not-allowed transition-all";
+            stopPlayBtn.className = "px-3.5 sm:px-4 py-2.5 rounded-lg bg-slate-800 text-slate-500 font-black text-sm sm:text-base border border-slate-700/60 opacity-50 cursor-not-allowed transition-all";
 
             drawWaveform();
         }
@@ -317,9 +317,9 @@
             }
             
             playBtn.disabled = true;
-            playBtn.className = "px-3 py-2 rounded-lg bg-slate-800 text-slate-500 font-black text-xs sm:text-sm border border-slate-700/60 opacity-50 cursor-not-allowed transition-all";
+            playBtn.className = "px-3.5 sm:px-4 py-2.5 rounded-lg bg-slate-800 text-slate-500 font-black text-sm sm:text-base border border-slate-700/60 opacity-50 cursor-not-allowed transition-all";
             stopPlayBtn.disabled = true;
-            stopPlayBtn.className = "px-3 py-2 rounded-lg bg-slate-800 text-slate-500 font-black text-xs border border-slate-700/60 opacity-50 cursor-not-allowed transition-all";
+            stopPlayBtn.className = "px-3.5 sm:px-4 py-2.5 rounded-lg bg-slate-800 text-slate-500 font-black text-sm sm:text-base border border-slate-700/60 opacity-50 cursor-not-allowed transition-all";
 
             timeText.textContent = "시간: 00:00";
             freqText.textContent = "대기";
@@ -352,7 +352,7 @@
                     audioPlayer.load();
 
                     playBtn.disabled = false;
-                    playBtn.className = "px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-black text-xs sm:text-sm shadow cursor-pointer transition-all";
+                    playBtn.className = "px-3.5 sm:px-4 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-black text-sm sm:text-base shadow cursor-pointer transition-all";
                 };
                 mediaRecorder.start();
 
@@ -398,7 +398,7 @@
 
             isListening = false;
             btnText.textContent = "측정 시작";
-            statusDot.className = "w-3 h-3 rounded-full bg-slate-600";
+            statusDot.className = "w-3.5 h-3.5 rounded-full bg-slate-500";
             statusText.textContent = "일시정지됨";
             statusText.className = "text-xs sm:text-sm font-extrabold text-slate-200";
 
